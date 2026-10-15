@@ -1,93 +1,82 @@
-# Eksperimen SML — Telco Customer Churn
+# Telco Customer Churn — SML Experiment
 
-Eksperimen ini menggunakan dataset **Telco Customer Churn** untuk masalah
-binary classification: memprediksi apakah pelanggan akan churn berdasarkan
-karakteristik layanan dan akun pelanggan. Target yang digunakan adalah kolom
-`Churn`.
+This project explores the **Telco Customer Churn** dataset through exploratory data analysis and a reproducible preprocessing pipeline. The goal is to prepare customer service and account information for a binary classification task that predicts whether a customer will churn.
 
-## Sumber data
+The target column is `Churn`, encoded as:
 
-- Sumber: [Kaggle — Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
-- Nama file sumber: `WA_Fn-UseC_-Telco-Customer-Churn.csv`
-- Salinan raw yang digunakan project:
-  `telco_churn_raw.csv`
+- `0` — No churn
+- `1` — Churn
 
-Dataset raw dipertahankan apa adanya. Perubahan data hanya dilakukan pada
-notebook eksperimen dan pipeline preprocessing pada task berikutnya.
+## Dataset
 
-## Struktur project
+- Source: [Kaggle — Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+- Raw dataset in this repository: `telco_churn_raw.csv`
+
+The raw dataset is kept unchanged. Data preparation is performed by the notebook and the automated preprocessing script.
+
+## Experiment tracking
+
+MLflow experiment tracking and run details are available in the project’s DagsHub repository:
+
+- [View MLflow experiments on DagsHub](https://dagshub.com/kuzanf3b/telco-customer-churn)
+
+## Repository structure
 
 ```text
-Eksperimen_SML_kuzanf3b/
-├── telco_churn_raw.csv
+experiment-sml/
+├── .github/
+│   └── workflows/
+│       └── main.yml
 ├── preprocessing/
-│   ├── Eksperimen_kuzanf3b.ipynb
+│   ├── Eksperimen_Muhammad_Fauzan_Febrian_Wibowo.ipynb
+│   ├── automate_kuzanf3b.py
+│   ├── artifacts/
+│   │   ├── feature_names.json
+│   │   ├── preprocessing_metadata.json
+│   │   └── preprocessor.joblib
 │   └── telco_customer_churn_preprocessing/
-│       ├── telco_churn_test.csv
-│       └── telco_churn_train.csv
+│       ├── telco_churn_train.csv
+│       └── telco_churn_test.csv
 ├── requirements.txt
+├── telco_churn_raw.csv
 └── README.md
 ```
 
-`Eksperimen_kuzanf3b.ipynb` adalah salinan kerja dari template resmi. Urutan
-tahap template dipertahankan: perkenalan dataset, import library, memuat
-dataset, EDA, dan data preprocessing. Isi eksperimen manual akan dilengkapi
-pada notebook tersebut, termasuk pemeriksaan kualitas data, distribusi target,
-dan visualisasi distribusi fitur.
+## Notebook
 
-## Menjalankan eksperimen
+`preprocessing/Eksperimen_Muhammad_Fauzan_Febrian_Wibowo.ipynb` contains the manual experiment workflow, including:
 
-Gunakan Python 3.12.7 dan buat environment terisolasi:
+1. Dataset introduction and loading
+2. Exploratory data analysis
+3. Data quality checks
+4. Target distribution analysis
+5. Feature distribution visualizations
+6. Data preprocessing
 
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m jupyter lab
-```
+The notebook reads the raw dataset from the repository using a relative path. Run it with the repository root as the working directory.
 
-Buka `preprocessing/Eksperimen_kuzanf3b.ipynb` dari root repository. Notebook
-menggunakan dataset lokal melalui path relatif agar dapat dijalankan ulang tanpa
-bergantung pada URL eksternal. Jika notebook dibuka dari direktori berbeda,
-jalankan kernel dengan working directory root repository.
+## Automated preprocessing
 
-## Konvensi output
+The preprocessing script is located at `preprocessing/automate_kuzanf3b.py`. It performs the following steps:
 
-Hasil dataset siap latih akan ditulis ke `preprocessing/telco_customer_churn_preprocessing/`. Artefak
-pendukung preprocessing seperti metadata dan preprocessor akan ditulis ke
-`preprocessing/artifacts/`.
+- Converts `TotalCharges` to a numeric column
+- Removes duplicate rows
+- Removes the `customerID` identifier column
+- Encodes `Churn` as `0` or `1`
+- Splits the data into stratified training and test sets
+- Imputes missing numeric values with the median
+- Imputes missing categorical values with the most frequent value
+- Applies one-hot encoding to categorical features
+- Standardizes numeric features
+- Saves the fitted preprocessor and preprocessing metadata
 
-## Hasil eksperimen manual
-
-Notebook menghasilkan dua file untuk pemeriksaan awal:
-
-- `preprocessing/telco_customer_churn_preprocessing/telco_churn_train.csv`
-- `preprocessing/telco_customer_churn_preprocessing/telco_churn_test.csv`
-
-Preprocessing yang diterapkan adalah konversi `TotalCharges` ke numerik,
-imputasi median untuk fitur numerik, imputasi modus untuk fitur kategorikal,
-one-hot encoding kategori, dan standardisasi fitur numerik. `customerID`
-dihapus karena merupakan identifier. Split dilakukan dengan `stratify=y` dan
-`random_state=42`; seluruh transformer di-fit hanya pada data train.
-
-Pada dataset ini, output berisi 5.634 baris train, 1.409 baris test, 45 fitur
-hasil transformasi, dan kolom target `Churn` bernilai `0` atau `1`. Output
-tidak memiliki missing value setelah preprocessing. File hasil ini adalah
-artefak eksperimen manual dan akan direproduksi oleh `automate_kuzanf3b.py`
-pada task berikutnya.
-
-## Preprocessing otomatis (Task 3)
-
-Script otomatis tersedia pada `preprocessing/automate_kuzanf3b.py`.
-
-Jalankan dari root repository:
+Run the script from the repository root:
 
 ```bash
 python preprocessing/automate_kuzanf3b.py
 ```
 
-Opsional (override path):
+Optional path overrides are also supported:
 
 ```bash
 python preprocessing/automate_kuzanf3b.py \
@@ -96,21 +85,46 @@ python preprocessing/automate_kuzanf3b.py \
   --artifacts-dir preprocessing/artifacts
 ```
 
-Output otomatis:
+The default configuration uses a `0.2` test split and `random_state=42`.
+
+### Generated outputs
+
+Processed datasets:
 
 - `preprocessing/telco_customer_churn_preprocessing/telco_churn_train.csv`
 - `preprocessing/telco_customer_churn_preprocessing/telco_churn_test.csv`
+
+Preprocessing artifacts:
+
 - `preprocessing/artifacts/preprocessor.joblib`
 - `preprocessing/artifacts/feature_names.json`
 - `preprocessing/artifacts/preprocessing_metadata.json`
 
-## Workflow preprocessing (GitHub Actions)
+## Installation and usage
 
-Workflow ada di `.github/workflows/main.yml` dan akan berjalan saat:
+The project uses Python 3.12 and pinned dependencies from `requirements.txt`.
 
-- `workflow_dispatch` (manual trigger),
-- push/pull request yang menyentuh dataset raw, script preprocessing, requirements, atau file workflow.
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
 
-Workflow melakukan install dependency, menjalankan `automate_kuzanf3b.py`, lalu
-mengunggah hasil preprocessing dan artefak sebagai GitHub Actions artifact
-`telco-churn-preprocessed`.
+To launch JupyterLab:
+
+```bash
+python -m jupyter lab
+```
+
+Then open the notebook under `preprocessing/`.
+
+## Continuous integration
+
+The GitHub Actions workflow in `.github/workflows/main.yml` runs the automated preprocessing pipeline when:
+
+- It is triggered manually with `workflow_dispatch`
+- Changes are pushed to `main` and affect the raw dataset, preprocessing script, dependencies, or workflow
+- A pull request changes the relevant preprocessing files
+
+The workflow installs the dependencies, runs the preprocessing script, and uploads the generated datasets and artifacts as the `telco-churn-preprocessed` workflow artifact.
